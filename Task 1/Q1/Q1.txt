@@ -1,0 +1,34 @@
+#include <mega16.h>
+static unsigned int time_count; /*.5 second counter*/
+23
+void main (void) {
+	DDRC = 0x01; /*set lsb for output*/
+	/*set timer 0 prescaler to clk/8*/
+	TCCR0=0x02;
+	TCNT0=105;
+	/* unmask Timer 0 overflow interrupt*/
+	TIMSK=0x01;
+	/* enable interrupts */
+	#asm(“sei")
+	while(1)
+	{
+	; /*do nothing in here */
+	}
+	}
+	// Timer 0 overflow interrupt service routine
+	interrupt [TIM0_OVF] void timer0_ovf_isr(void)
+	{
+		TCNT0 = 105; /*set for 300 us timeout*/
+		++time_count; /*increment .5 second counter*/
+		if (time_count == 5000)
+			{
+			PORTC.0 = (PORTC.0 ^ 1); /*complement port bit to blink LED*/
+			time_count = 0; /*reset time counter for next .5 second*/
+			}
+}
+
+
+
+#12Mhz/8 = 1.5Mhz -> 1/1.5Mhz = 0.66micros
+#0.66*150=10micros -> 255-150 = 105
+#500ms/10micros=5000
